@@ -9,4 +9,4 @@ be able to display the image on a VGA screen, to make the project more difficult
 is based on two parallel tracks; MATLAB and VHDL, where VHDL was included
 MATLAB to ensure image processing. The project uses kernel
 convolution where the kernel size is 3x3, this is because these operations are
-relatively simple and needs some calcu
+relatively simple and needs some calculations.
