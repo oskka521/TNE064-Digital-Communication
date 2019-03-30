@@ -1,0 +1,11 @@
+##THE
+This project is a part of the course TNE064 (Digital Communication Electronics),
+6hp Linköping University. The project was chosen between several predefined options,
+project 6 was selected ”VHDL simulation and implementation of image processing
+Algorithms ". The algorithms selected were egde-detection (Sobel), Gaussian blur and
+unsharp filter. To expand the project, it was chosen to also use a VGA driver to
+be able to display the image on a VGA screen, to make the project more difficult. The structure of the project
+is based on two parallel tracks; MATLAB and VHDL, where VHDL was included
+MATLAB to ensure image processing. The project uses kernel
+convolution where the kernel size is 3x3, this is because these operations are
+relatively simple and needs some calcu
