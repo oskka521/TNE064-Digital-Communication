@@ -1,0 +1,104 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity img_gen is
+	Port ( clk         : in  STD_LOGIC;
+			 x_control   : in  STD_LOGIC_VECTOR(9 downto 0);
+			 button_l    : in  STD_LOGIC;
+			 button_r    : in  STD_LOGIC;
+			 y_control   : in  STD_LOGIC_VECTOR(9 downto 0);
+			 rgb         : out STD_LOGIC_VECTOR(2 downto 0));
+end img_gen;
+
+architecture Behavioral of img_gen is
+
+	--VAGGAR
+	constant 	Wall_roofoLeft:		integer :=10;--stäckan mellan vägg och vänster skärmkant
+	constant 	Wall_roof:		integer :=10;--stäckan mellan vägg och tak skärmkant
+	constant 	wall_thickness:		integer :=10;--vägg tjocklek
+
+	
+	--BRADAN
+	signal  		bar_toLeft,bar_toLeft_next:		integer :=200; --stäckan mellan bradan och vänster skärmkant
+	constant 	bar_t:									integer :=150;	----stäckan mellan brädan och tak skärmkant
+	constant 	bar_k:									integer :=120;	--bradan tjocklek
+	constant 	bar_bredd:								integer:=120;	--bradan bredd
+	constant 	bar_hopp:								integer:=10;	--hatighet eller hopp för varje interation
+	signal 		bar_on:									std_logic;			
+	
+	
+
+	--UPPDATERAR(1/60) = 60hz --standard för att hinna vga hstigheten 
+	signal 		refresh_reg,refresh_next:	integer; 
+	constant 	refresh_constant:				integer:=830000;
+	signal 		refresh_tick:					std_logic;
+	
+	
+	--x,y PIXEL VISARE
+	signal x,y:integer range 0 to 650;
+
+	--BUFFER
+	signal rgb_reg,rgb_next:std_logic_vector(2 downto 0);
+
+begin
+
+	--x,y PIXEL VISARE
+	x <= conv_integer(x_control);
+	y <= conv_integer(y_control); --för att kunna gänmföra med andra vanliga tal 
+
+	--UPPDATERAR
+	process(clk)
+	begin
+		if clk'event and clk='1' then
+			refresh_reg<=refresh_next;       
+		end if;
+	end process;
+	
+	refresh_next <= 0 when refresh_reg = refresh_constant else refresh_reg+1;
+	refresh_tick <= '1' when refresh_reg = 0 else '0';
+	
+	--uppdaterar pos
+	process(clk)
+	begin
+		if clk'event and clk='1' then
+			bar_toLeft <= bar_toLeft_next;
+		end if;
+	end process;
+
+	--BRADANIMATION plus begränsningar
+	process(bar_toLeft, refresh_tick, button_r, button_l)
+	begin
+		bar_toLeft_next <= bar_toLeft;
+		if refresh_tick = '1' then
+			if button_l = '1' and bar_toLeft > bar_hopp 									then 			bar_toLeft_next <= bar_toLeft - bar_hopp;
+			elsif button_r = '1' and bar_toLeft < (639 - bar_hopp - bar_bredd) 	then 			bar_toLeft_next <= bar_toLeft + bar_hopp;
+			end if;
+		end if;
+	end process;
+
+
+
+
+
+	--bradansform så vga vet när den ska byta färg
+	bar_on <= '1' when x > bar_toLeft and x < (bar_toLeft + bar_bredd) and y > bar_t and y < (bar_t + bar_k) else '0'; 
+
+
+
+	--buffer
+	process(clk)
+	begin
+		if clk'event and clk='1' then
+			if bar_on = '1' then rgb_reg <= "001"; --red
+			else rgb_reg <= "000";
+			end if;
+		end if;
+	end process;
+
+	--output
+	 rgb<=rgb_reg;
+
+	 
+end Behavioral;
